@@ -17,6 +17,10 @@ function haversine(lat1: number, lon1: number, lat2: number, lon2: number): numb
 export async function startTracking(intervalMs: number = 5000) {
   if (currentActivity) return;
     currentActivity = ActivityStore.startNewActivity();
+    AppStorage.setOrCreate('liveStartTime', currentActivity.startTime);
+    AppStorage.setOrCreate('liveDistance', 0);
+    AppStorage.setOrCreate('livePoints', 0);
+
     let request:geoLocationManager.ContinuousLocationRequest = {'interval': 1, 'locationScenario': geoLocationManager.UserActivityScenario.NAVIGATION};
     let locationCallback = (location:geoLocationManager.Location):void => {
       console.info('locationCallback: data: ' + JSON.stringify(location));
@@ -27,14 +31,16 @@ export async function startTracking(intervalMs: number = 5000) {
         time: Date.now()
       }
       const pts = currentActivity!.points;
-      if(pts.length > 1){
-      const prev = pts[pts.length - 2];
-      const d = haversine(prev.lat, prev.lon, point.lat, point.lon);
-      if(d >= 2){
-        currentActivity!.distance += d;
-      }
+      if(pts.length > 0){
+        const prev = pts[pts.length - 1];
+        const d = haversine(prev.lat, prev.lon, point.lat, point.lon);
+        if(d >= 2){
+          currentActivity!.distance += d;
+        }
       }
       pts.push(point);
+      AppStorage.setOrCreate('liveDistance', currentActivity!.distance);
+      AppStorage.setOrCreate('livePoints', pts.length);
     };
     try {
       geoLocationManager.on('locationChange', request, locationCallback);

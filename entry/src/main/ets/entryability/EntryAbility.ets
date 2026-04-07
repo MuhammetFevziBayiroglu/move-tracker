@@ -8,6 +8,7 @@ import { window } from '@kit.ArkUI';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { wantAgent, WantAgent } from '@kit.AbilityKit';
 import { notificationManager } from '@kit.NotificationKit';
+import { ActivityStore } from '../data/ActivityStore';
 
 
 const DOMAIN = 0x0000;
@@ -51,7 +52,8 @@ export default class EntryAbility extends UIAbility {
 
     this.context.getApplicationContext().setColorMode(ConfigurationConstant.ColorMode.COLOR_MODE_NOT_SET);
     hilog.info(DOMAIN, 'testTag', '%{public}s', 'Ability onCreate');
-    AppStorage.setAndRef('context', this.context)
+    AppStorage.setAndRef('context', this.context);
+    ActivityStore.init(this.context);
   }
 
   onDestroy(): void {
